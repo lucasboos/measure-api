@@ -9,3 +9,8 @@ export interface IMeasurePayload {
   measure_datetime: Date;
   measure_type: MeasureType;
 }
+
+export interface IMeasureConfirmPayload {
+  measure_uuid: string;
+  confirmed_value: number;
+}

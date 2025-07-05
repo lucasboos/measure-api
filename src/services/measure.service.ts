@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/database';
 import { Measure } from '../entities/Measure';
-import { IMeasurePayload } from '../types/measure';
+import { IMeasurePayload, IMeasureConfirmPayload } from '../types/measure';
 
 const measureRepository = AppDataSource.getRepository(Measure);
 
@@ -38,4 +38,32 @@ export const registerMeasure = async (measure: IMeasurePayload) => {
     image_url: newMeasure.image_url,
     measure_value: newMeasure.measure_value,
   };
+}
+
+export const confirmMeasure = async (measure: IMeasureConfirmPayload) => {
+  const { measure_uuid, confirmed_value } = measure;
+
+  const existingMeasure = await measureRepository.findOneBy({ id: measure_uuid });
+  if (!existingMeasure) throw {
+    status: 404,
+    error_code: 'MEASURE_NOT_FOUND',
+    message: 'Measurement not found.'
+  };
+
+  const { has_confirmed, measure_value } = existingMeasure as any;
+  if (has_confirmed) throw {
+    status: 409,
+    error_code: 'CONFIRMATION_DUPLICATE',
+    message: 'This measurement has already been confirmed.'
+  };
+
+  const shouldUpdate = measure_value !== confirmed_value;
+
+  await measureRepository.update(
+    { id: measure_uuid },
+    {
+      has_confirmed: true,
+      ...(shouldUpdate && { measure_value: confirmed_value }),
+    }
+  );
 }
