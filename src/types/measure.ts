@@ -14,3 +14,8 @@ export interface IMeasureConfirmPayload {
   measure_uuid: string;
   confirmed_value: number;
 }
+
+export interface IMeasureFilter {
+  customer_code: string;
+  measure_type?: MeasureType;
+}

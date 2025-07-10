@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/database';
 import { Measure } from '../entities/Measure';
-import { IMeasurePayload, IMeasureConfirmPayload } from '../types/measure';
+import { IMeasurePayload, IMeasureConfirmPayload, IMeasureFilter } from '../types/measure';
 
 const measureRepository = AppDataSource.getRepository(Measure);
 
@@ -67,3 +67,35 @@ export const confirmMeasure = async (measure: IMeasureConfirmPayload) => {
     }
   );
 }
+
+export const getMeasuresByCustomer = async (filter: IMeasureFilter) => {
+  const { customer_code, measure_type } = filter;
+
+  const query = measureRepository
+    .createQueryBuilder('m')
+    .select([
+      'm.id',
+      'm.measure_datetime',
+      'm.measure_type',
+      'm.has_confirmed',
+      'm.image_url',
+    ])
+    .where('LOWER(m.customer_code) = LOWER(:customer_code)', { customer_code });
+
+  if (measure_type) {
+    query.andWhere('m.measure_type = :measure_type', { measure_type });
+  }
+
+  const measures = await query.getMany();
+
+  if (measures.length === 0) throw {
+    status: 404,
+    error_code: 'MEASURES_NOT_FOUND',
+    message: 'Measurements not found.'
+  };
+
+  return {
+    customer_code,
+    measures: measures,
+  };
+};
