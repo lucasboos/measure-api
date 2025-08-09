@@ -1,11 +1,12 @@
 import { AppDataSource } from '../config/database';
 import { Measure } from '../entities/Measure';
 import { IMeasurePayload, IMeasureConfirmPayload, IMeasureFilter } from '../types/measure';
+import { analyzeMeter } from './gemini.service';
 
 const measureRepository = AppDataSource.getRepository(Measure);
 
 export const registerMeasure = async (measure: IMeasurePayload) => {
-  const { customer_code, measure_datetime } = measure;
+  const { customer_code, measure_datetime, image } = measure;
 
   const existingMeasure = await measureRepository
     .createQueryBuilder('m')
@@ -22,13 +23,12 @@ export const registerMeasure = async (measure: IMeasurePayload) => {
     message: 'Monthly measurement already taken.'
   };
 
-  // Mock
-  const measure_value = Math.floor(Math.random() * 1000);
+  const measure_value = await analyzeMeter(image, measure.measure_type);
 
   const newMeasure = measureRepository.create({
     ...measure,
     measure_value,
-    image_url: 'https://fake-bucket.com/image/' + crypto.randomUUID(),
+    image_url: `data:image/png;base64,${image}`,
   });
 
   await measureRepository.save(newMeasure);

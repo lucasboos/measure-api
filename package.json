@@ -1,9 +1,11 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "build/app.js",
   "scripts": {
     "dev": "ts-node src/app.ts",
+    "build": "tsc",
+    "start": "node build/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/genai": "^1.13.0",
     "bcrypt": "^5.1.1",
     "fastify": "^5.2.1",
     "fastify-jwt": "^4.1.3",
